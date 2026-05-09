@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>你是佐助吗</title>
+<style>
+/* ============================================================
+   CSS Reset & 全局
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red:    #c0392b;
+  --orange: #e67e22;
+  --gold:   #f39c12;
+  --dark:   #0a0a0a;
+  --panel:  #111;
+  --text:   #e0d5c1;
+  --accent: #d35400;
+}
+
+body {
+  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  background: var(--dark);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* 行楷字体 - 直接使用系统字体名 */
+.xk, .xk-font {
+  font-family: 'STXingkai', '华文行楷', '华文楷书', 'KaiTi', '楷体', serif !important;
+}
+
+/* ============================================================
+   背景粒子
+   ============================================================ */
+#particles {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 0;
+}
+
+/* ============================================================
+   主容器
+   ============================================================ */
+#app {
+  position: relative; z-index: 1;
+  max-width: 800px; margin: 0 auto; padding: 20px;
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+
+.page {
+  display: none; width: 100%;
+  background: rgba(17,17,17,0.92);
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 40px 30px;
+  box-shadow: 0 0 60px rgba(192,57,43,0.15);
+  animation: fadeUp 0.6s ease;
+}
+.page.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   封面页
+   ============================================================ */
+#cover {
+  text-align: center;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+#cover .cover-img {
+  width: 100%; max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 0 80px rgba(192,57,43,0.35);
+  margin-bottom: 30px;
+}
+#cover h1 {
+  font-size: 3.2em;
+  font-family: 'STXingkai', '华文行楷', 'KaiTi', '楷体', serif;
+  color: var(--orange);
+  text-shadow: 0 0 30px rgba(230,126,34,0.5);
+  letter-spacing: 8px;
+  margin-bottom: 10px;
+}
+#cover .subtitle {
+  color: #999; font-size: 1.1em; margin-bottom: 40px;
+  letter-spacing: 3px;
+}
+#cover .btn-start {
+  display: inline-block;
+  padding: 16px 60px;
+  font-size: 1.3em; letter-spacing: 4px;
+  color: #fff;
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  border: none; border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 0 30px rgba(231,76,60,0.4);
+  position: relative; overflow: hidden;
+}
+#cover .btn-start:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 50px rgba(231,76,60,0.7);
+}
+#cover .btn-start::after {
+  content: '';
+  position: absolute; top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2), transparent 70%);
+  animation: btnShine 2s infinite;
+}
+@keyframes btnShine {
+  0%   { transform: translate(-50%,-50%) scale(0); opacity: 1; }
+  100% { transform: translate(50%,50%) scale(1); opacity: 0; }
+}
+
+/* ============================================================
+   问题页
+   ============================================================ */
+#quiz-page .progress-bar {
+  width: 100%; height: 6px;
+  background: #222; border-radius: 3px;
+  margin-bottom: 30px; overflow: hidden;
+}
+#quiz-page .progress-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, #c0392b, #e67e22);
+  transition: width 0.4s ease;
+}
+#quiz-page .q-num {
+  font-size: 0.85em; color: var(--accent);
+  letter-spacing: 2px; margin-bottom: 10px;
+}
+#quiz-page h2 {
+  font-size: 1.35em; margin-bottom: 28px;
+  line-height: 1.7; color: #f0e6d3;
+}
+#quiz-page .options { display: flex; flex-direction: column; gap: 12px; }
+#quiz-page .opt {
+  padding: 16px 22px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s;
+  font-size: 1.05em;
+  color: #ccc;
+}
+#quiz-page .opt:hover {
+  border-color: var(--accent);
+  background: #1f1a18;
+  color: #fff;
+  transform: translateX(4px);
+}
+#quiz-page .opt.selected {
+  border-color: var(--orange);
+  background: #1f1812;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(230,126,34,0.2);
+}
+#quiz-page .btn-next {
+  margin-top: 30px;
+  padding: 12px 40px;
+  font-size: 1.1em; letter-spacing: 3px;
+  color: #fff;
+  background: linear-gradient(135deg, #8e44ad, #9b59b6);
+  border: none; border-radius: 50px;
+  cursor: pointer;
+  opacity: 0.4; transition: all 0.3s;
+  pointer-events: none;
+}
+#quiz-page .btn-next.enabled {
+  opacity: 1; pointer-events: auto;
+}
+#quiz-page .btn-next.enabled:hover {
+  box-shadow: 0 0 30px rgba(155,89,182,0.5);
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+   结果页
+   ============================================================ */
+#result-page { text-align: center; }
+
+/* 角色卡片 (纯CSS, 不依赖外网图片) */
+.char-card {
+  position: relative;
+  width: 100%; max-width: 420px;
+  margin: 0 auto 24px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(192,57,43,0.25);
+}
+.char-card .card-bg {
+  padding: 48px 24px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.char-card .card-bg::before {
+  content: '';
+  position: absolute; top: -40%; left: -20%;
+  width: 140%; height: 180%;
+  opacity: 0.08;
+  background: radial-gradient(circle at center, #fff 0%, transparent 70%);
+  animation: cardGlow 3s ease-in-out infinite;
+}
+@keyframes cardGlow {
+  0%,100% { transform: rotate(0deg); }
+  50%     { transform: rotate(180deg); }
+}
+
+.char-card .char-emoji {
+  font-size: 7em;
+  line-height: 1;
+  position: relative; z-index: 1;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 30px rgba(0,0,0,0.5));
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-12px); }
+}
+
+.char-card .card-naruto  { background: linear-gradient(135deg, #1a1200, #2d1f00, #1a1200); }
+.char-card .card-sasuke  { background: linear-gradient(135deg, #12001a, #1e0033, #12001a); }
+.char-card .card-kakashi { background: linear-gradient(135deg, #0f1419, #1a232e, #0f1419); }
+.char-card .card-itachi  { background: linear-gradient(135deg, #1a0000, #330000, #1a0000); }
+.char-card .card-jiraiya { background: linear-gradient(135deg, #1a0f00, #331900, #1a0f00); }
+.char-card .card-shikamaru{background: linear-gradient(135deg, #0a1a0f, #0d3317, #0a1a0f); }
+.char-card .card-gaara   { background: linear-gradient(135deg, #1a1400, #332200, #1a1400); }
+.char-card .card-sakura  { background: linear-gradient(135deg, #1a0020, #33003d, #1a0020); }
+
+#result-page .char-img {
+  display: none; /* 用 CSS 卡片替代, 隐藏 img */
+}
+
+#result-page .char-name {
+  font-size: 2.8em;
+  font-family: 'STXingkai', '华文行楷', 'KaiTi', '楷体', serif;
+  color: var(--gold);
+  text-shadow: 0 0 30px rgba(243,156,18,0.6);
+  letter-spacing: 6px;
+  margin-bottom: 6px;
+}
+#result-page .char-title {
+  color: #999; font-size: 0.95em;
+  letter-spacing: 2px; margin-bottom: 20px;
+}
+#result-page .char-desc {
+  text-align: left; line-height: 2;
+  color: #bbb; font-size: 0.95em;
+  background: #161616;
+  padding: 24px; border-radius: 8px;
+  border-left: 3px solid var(--accent);
+  margin-bottom: 24px;
+}
+#result-page .match-bar {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  justify-content: center; margin-bottom: 28px;
+}
+#result-page .match-tag {
+  padding: 6px 18px; border-radius: 20px;
+  font-size: 0.85em; letter-spacing: 1px;
+  background: #1a1a1a; border: 1px solid #333;
+  color: #888;
+}
+#result-page .match-tag.top { border-color: var(--orange); color: var(--orange); }
+#result-page .btn-retry {
+  padding: 12px 40px;
+  font-size: 1em; letter-spacing: 3px;
+  color: #fff;
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  border: none; border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+#result-page .btn-retry:hover {
+  box-shadow: 0 0 30px rgba(231,76,60,0.5);
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+   BGM 控制
+   ============================================================ */
+#bgm-ctrl {
+  position: fixed; top: 20px; right: 20px;
+  z-index: 100;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: rgba(17,17,17,0.85);
+  border: 1px solid #444;
+  color: #aaa;
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex; align-items: center; justify-content: center;
+}
+#bgm-ctrl:hover { border-color: var(--accent); color: #fff; }
+#bgm-ctrl.playing {
+  border-color: var(--orange);
+  color: var(--orange);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(230,126,34,0.5); }
+  50%     { box-shadow: 0 0 0 14px rgba(230,126,34,0); }
+}
+
+/* ============================================================
+   水印
+   ============================================================ */
+#watermark {
+  position: fixed; bottom: 20px; right: 28px;
+  font-family: 'STXingkai', '华文行楷', 'KaiTi', '楷体', serif;
+  font-size: 9pt;
+  color: rgba(255,255,255,0.13);
+  z-index: 99; pointer-events: none;
+  letter-spacing: 3px;
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width: 600px) {
+  #app { padding: 12px; }
+  .page { padding: 24px 16px; }
+  #cover h1 { font-size: 2em; letter-spacing: 4px; }
+  #result-page .char-name { font-size: 1.9em; }
+  .char-card .char-emoji { font-size: 5em; }
+}
+
+/* ============================================================
+   提示弹窗
+   ============================================================ */
+.toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  z-index: 200;
+  background: #1a1a1a; color: #e67e22;
+  border: 1px solid #e67e22;
+  border-radius: 8px; padding: 10px 24px;
+  font-size: 0.9em; letter-spacing: 1px;
+  opacity: 0; transition: opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<button id="bgm-ctrl" title="BGM 开/关">♪</button>
+<div id="watermark">铃蘭</div>
+<div class="toast" id="toast"></div>
+
+<div id="app">
+
+  <!-- ===== 封面 ===== -->
+  <div id="cover" class="page active">
+    <img class="cover-img" src="cover.jpg" alt="火影封面"
+         onerror="this.style.display='none';document.getElementById('cover-fb').style.display='block';">
+    <div id="cover-fb" style="display:none;font-size:6em;margin:20px 0;">🍥</div>
+    <h1>你是佐助吗</h1>
+    <p class="subtitle">— 火影忍者 · 性格测试 —</p>
+    <button class="btn-start" onclick="startQuiz()">开 始 测 试</button>
+  </div>
+
+  <!-- ===== 问题页 ===== -->
+  <div id="quiz-page" class="page">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="q-num" id="q-num"></div>
+    <h2 id="q-text"></h2>
+    <div class="options" id="q-opts"></div>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">下一题 ▸</button>
+  </div>
+
+  <!-- ===== 结果页 ===== -->
+  <div id="result-page" class="page">
+    <div class="char-card" id="char-card">
+      <div class="card-bg" id="card-bg">
+        <div class="char-emoji" id="r-emoji"></div>
+      </div>
+    </div>
+    <img class="char-img" id="r-img" src="" alt="">
+    <div class="char-name xk-font" id="r-name"></div>
+    <div class="char-title" id="r-title"></div>
+    <div class="char-desc" id="r-desc"></div>
+    <div class="match-bar" id="r-matches"></div>
+    <button class="btn-retry" onclick="retry()">再 测 一 次</button>
+  </div>
+
+</div>
+
+<audio id="bgm" loop preload="auto">
+  <source src="bgm.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* ================================================================
+   提示 toast
+   ================================================================ */
+function toast(msg, ms) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function(){ t.classList.remove('show'); }, ms || 2000);
+}
+
+/* ================================================================
+   背景粒子
+   ================================================================ */
+(function(){
+  var c = document.getElementById('particles');
+  var ctx = c.getContext('2d');
+  var w, h, ps = [];
+  function R(){ w=c.width=window.innerWidth; h=c.height=window.innerHeight; }
+  R(); window.addEventListener('resize', R);
+  for (var i=0;i<50;i++) ps.push({ x:Math.random()*w, y:Math.random()*h, vx:(Math.random()-0.5)*0.6, vy:(Math.random()-0.5)*0.6, r:Math.random()*2+1, a:Math.random()*0.5+0.2 });
+  (function D(){
+    ctx.clearRect(0,0,w,h);
+    for (var i=0;i<ps.length;i++) { var p=ps[i]; p.x+=p.vx; p.y+=p.vy; if(p.x<0||p.x>w)p.vx*=-1; if(p.y<0||p.y>h)p.vy*=-1; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle='rgba(192,57,43,'+p.a+')'; ctx.fill(); }
+    for (var i=0;i<ps.length;i++) for (var j=i+1;j<ps.length;j++) { var dx=ps[i].x-ps[j].x,dy=ps[i].y-ps[j].y,d=Math.sqrt(dx*dx+dy*dy); if(d<120){ ctx.beginPath(); ctx.moveTo(ps[i].x,ps[i].y); ctx.lineTo(ps[j].x,ps[j].y); ctx.strokeStyle='rgba(192,57,43,'+(0.08*(1-d/120))+')'; ctx.stroke(); } }
+    requestAnimationFrame(D);
+  })();
+})();
+
+/* ================================================================
+   BGM 控制
+   ================================================================ */
+var bgm = document.getElementById('bgm');
+var bgmCtrl = document.getElementById('bgm-ctrl');
+var bgmPlaying = false;
+var bgmReady = false;
+
+bgm.addEventListener('canplaythrough', function(){ bgmReady = true; });
+bgm.addEventListener('error', function(){ bgmReady = false; });
+
+bgmCtrl.addEventListener('click', function(){
+  if (!bgmReady) {
+    toast('未找到 bgm.mp3，请将高燃BGM文件重命名为 bgm.mp3 放入同目录');
+    return;
+  }
+  if (bgmPlaying) {
+    bgm.pause();
+    bgmCtrl.classList.remove('playing');
+    bgmCtrl.textContent = '♪';
+    bgmPlaying = false;
+  } else {
+    bgm.play().then(function(){
+      bgmPlaying = true;
+      bgmCtrl.classList.add('playing');
+      bgmCtrl.textContent = '♫';
+    }).catch(function(){
+      bgmReady = false;
+      toast('BGM 播放失败，请检查文件');
+    });
+  }
+});
+
+/* ================================================================
+   角色定义 — 纯 CSS 卡片，不依赖外网图片
+   ================================================================ */
+var characters = {
+  naruto: {
+    id: 'naruto', cssClass: 'card-naruto',
+    name: '漩涡鸣人', title: '阳光热血 · 永不言弃',
+    desc: '你的内心住着一个永不熄灭的小太阳。无论面对怎样的困境，你总能以乐观和毅力冲破黑暗。你重视伙伴胜过一切，相信团队的力量可以创造奇迹。你或许偶尔莽撞，但那份真诚与热血总能让身边的人被你感染，愿意与你并肩前行。',
+    traits: ['乐观','执着','重视羁绊','热血','包容'],
+    emoji: '🍥', color: '#f39c12'
+  },
+  sasuke: {
+    id: 'sasuke', cssClass: 'card-sasuke',
+    name: '宇智波佐助', title: '冷酷执着 · 追求力量',
+    desc: '你是一个目标感极强的人，一旦认定方向便会不惜一切代价去实现。孤独对你而言不是惩罚而是修行。你外表冷淡，实则内心炽热，只是不轻易向人敞开。你对力量的渴望驱动着你不断突破极限，而那份深藏的温柔，只有真正走进你内心的人才能发现。',
+    traits: ['执着','孤高','强大','冷静','重情'],
+    emoji: '⚡', color: '#8e44ad'
+  },
+  kakashi: {
+    id: 'kakashi', cssClass: 'card-kakashi',
+    name: '旗木卡卡西', title: '从容睿智 · 举重若轻',
+    desc: '你有着超越年龄的成熟与智慧。无论情况多危急，你总能保持冷静，用理性的分析找到出路。你表面慵懒随性，实则深藏不露——那份从容背后是扎实的实力与丰富的阅历。你重视规则但不会被规则束缚，对后辈既严格又温柔，是团队中不可或缺的精神支柱。',
+    traits: ['冷静','睿智','可靠','从容','温柔'],
+    emoji: '📖', color: '#7f8c8d'
+  },
+  itachi: {
+    id: 'itachi', cssClass: 'card-itachi',
+    name: '宇智波鼬', title: '牺牲奉献 · 大爱无言',
+    desc: '你是那种宁愿自己承受一切也不愿让在乎的人受伤的类型。你看问题远比常人深远，做出的选择常常不被人理解，但你从不辩解。你内心充满了温柔与慈悲，却习惯用沉默和距离伪装自己。你的强大不是为了征服，而是为了守护。',
+    traits: ['牺牲','智慧','温柔','隐忍','远见'],
+    emoji: '🌑', color: '#c0392b'
+  },
+  jiraiya: {
+    id: 'jiraiya', cssClass: 'card-jiraiya',
+    name: '自来也', title: '自由洒脱 · 豪迈不羁',
+    desc: '你天性自由，讨厌被束缚。你有着一颗赤诚的赤子之心，热爱生活，相信美好的事物值得被守护。你或许看起来大大咧咧不拘小节，但内心深处有着坚定的信念和不输任何人的责任感。你的豪迈与真诚让身边的人都感到安心和温暖。',
+    traits: ['自由','豪迈','信念','真诚','责任感'],
+    emoji: '🐸', color: '#d35400'
+  },
+  shikamaru: {
+    id: 'shikamaru', cssClass: 'card-shikamaru',
+    name: '奈良鹿丸', title: '理性佛系 · 天才军师',
+    desc: '你拥有远超常人的理性思维。对你来说，麻烦事能躲就躲——但当真需要你出手时，你那惊人的分析力和战略眼光会让所有人折服。你有一套自己的生活哲学，不盲从不随波逐流，在关键时刻总能做出最正确的判断。你的懒散只是表象，智慧才是底色。',
+    traits: ['理性','智慧','佛系','可靠','冷静'],
+    emoji: '♟️', color: '#27ae60'
+  },
+  gaara: {
+    id: 'gaara', cssClass: 'card-gaara',
+    name: '我爱罗', title: '孤独守护 · 破茧成蝶',
+    desc: '你经历过不被理解的孤独，但也正是这种孤独塑造了你强大的内心。你曾筑起高墙保护自己，直到发现真正的力量来自爱与羁绊。如今的你已蜕变为一个温柔而坚定的守护者，用自己的方式保护着珍视的一切。你的成长历程本身就是一部动人的传奇。',
+    traits: ['孤独','守护','成长','温柔','强大'],
+    emoji: '🏜️', color: '#b8860b'
+  },
+  sakura: {
+    id: 'sakura', cssClass: 'card-sakura',
+    name: '春野樱', title: '成长蜕变 · 坚韧不拔',
+    desc: '你或许起点不高，但凭借超乎常人的努力一步步成长为独当一面的人。你内心细腻，情感丰富，但也拥有惊人的爆发力。你善于学习和吸收，不断超越昨天的自己。你的成长轨迹证明：天赋决定起点，但努力才能决定终点。你对珍视之人的守护之心坚不可摧。',
+    traits: ['努力','成长','细腻','坚韧','守护'],
+    emoji: '🌸', color: '#e91e63'
+  }
+};
+
+/* ================================================================
+   12 道问题
+   ================================================================ */
+var questions = [
+  {
+    q: '1. 忍者学校放学后，你通常会做什么？',
+    opts: [
+      { text: '拉上伙伴一起去一乐吃拉面，边吃边聊', scores: { naruto:3, jiraiya:2 } },
+      { text: '独自去训练场加练手里剑和体术', scores: { sasuke:3, itachi:1 } },
+      { text: '躺在草地上看云发呆，思考人生', scores: { shikamaru:3, kakashi:2 } },
+      { text: '去图书馆研究忍术卷轴，学习新知识', scores: { sakura:2, kakashi:2, itachi:2 } }
+    ]
+  },
+  {
+    q: '2. 中忍考试遇到明显比你强的对手，你的策略是？',
+    opts: [
+      { text: '正面硬刚！就算打不过也要拼尽全力让他认可你', scores: { naruto:3, jiraiya:1 } },
+      { text: '冷静观察对手的招式规律，找到破绽一击制胜', scores: { sasuke:2, kakashi:2, itachi:3 } },
+      { text: '先周旋消耗对手体力，用计谋设陷阱', scores: { shikamaru:3, kakashi:1 } },
+      { text: '保护队友优先，找机会带队友一起脱身', scores: { gaara:2, itachi:2, sakura:1 } }
+    ]
+  },
+  {
+    q: '3. 如果你获得了一次禁术的学习机会，你会？',
+    opts: [
+      { text: '学！力量没有对错，重要的是使用它的人', scores: { sasuke:3, naruto:1 } },
+      { text: '先研究禁术的代价和风险，再决定是否值得', scores: { kakashi:3, shikamaru:2 } },
+      { text: '放弃——强大的力量往往伴随着无法承受的代价', scores: { itachi:3, gaara:1 } },
+      { text: '学来保护重要的人，即使代价是自己承受痛苦', scores: { itachi:2, gaara:2, naruto:2 } }
+    ]
+  },
+  {
+    q: '4. 同伴被敌人抓走了，你会怎么做？',
+    opts: [
+      { text: '二话不说立刻追上去，拼上性命也要救回同伴', scores: { naruto:3, jiraiya:2 } },
+      { text: '先分析情报制定营救计划，确保成功率', scores: { shikamaru:3, kakashi:2 } },
+      { text: '独自承担，不连累其他人——这本就是我自己的事', scores: { sasuke:3, itachi:2 } },
+      { text: '集合所有能帮忙的人组成小队，团队行动', scores: { sakura:2, kakashi:1, gaara:2 } }
+    ]
+  },
+  {
+    q: '5. 第三代火影大人交给你一个S级任务，搭档是个你很讨厌的人，你？',
+    opts: [
+      { text: '虽然讨厌但任务归任务，以专业态度完成配合', scores: { kakashi:3, shikamaru:2 } },
+      { text: '尝试了解对方，说不定能化敌为友', scores: { naruto:3, jiraiya:2 } },
+      { text: '尽量独立完成自己的部分，少跟对方交流', scores: { sasuke:2, itachi:2 } },
+      { text: '申请换人，和合不来的人组队效率太低', scores: { sasuke:1, gaara:1 } }
+    ]
+  },
+  {
+    q: '6. 木叶村遭到袭击，你的第一反应是冲向哪里？',
+    opts: [
+      { text: '冲向战场最前线，正面迎击敌人', scores: { naruto:3, jiraiya:3 } },
+      { text: '先去确认重要之人的安全，然后反击', scores: { itachi:3, gaara:2 } },
+      { text: '迅速到高处观察全局，找出敌方指挥系统', scores: { shikamaru:3, kakashi:2 } },
+      { text: '去医疗站帮忙，救治伤员同样是战斗', scores: { sakura:3, itachi:1 } }
+    ]
+  },
+  {
+    q: '7. 你内心最大的恐惧是什么？',
+    opts: [
+      { text: '失去重要的同伴和羁绊', scores: { naruto:2, gaara:3, itachi:1 } },
+      { text: '自己不够强大，无法达成目标', scores: { sasuke:3, sakura:2 } },
+      { text: '自己的选择导致无辜的人受伤害', scores: { itachi:3, kakashi:2 } },
+      { text: '一生碌碌无为，没有留下任何值得传颂的事迹', scores: { jiraiya:3, naruto:1 } }
+    ]
+  },
+  {
+    q: '8. 在忍者大战中，你被赋予指挥一个小队的权力，你会？',
+    opts: [
+      { text: '相信每个队员的能力，给予最大自由度', scores: { kakashi:3, jiraiya:2 } },
+      { text: '亲自制定详细战术，确保每个人的安全', scores: { shikamaru:3, itachi:1 } },
+      { text: '身先士卒冲在最前面，用行动鼓舞士气', scores: { naruto:3, jiraiya:1 } },
+      { text: '把最危险的任务留给自己，把安全留给队员', scores: { itachi:3, gaara:2 } }
+    ]
+  },
+  {
+    q: '9. 如果有一天你能改变过去的一件事，你会？',
+    opts: [
+      { text: '不改变——正是过去的痛苦塑造了现在的我', scores: { itachi:2, gaara:3, kakashi:2 } },
+      { text: '阻止那场导致亲友离世的悲剧', scores: { sasuke:2, naruto:2, itachi:2 } },
+      { text: '改变自己曾经的懦弱，更早站出来保护想保护的人', scores: { sakura:3, gaara:2 } },
+      { text: '回到过去告诉自己：享受当下，别总是那么紧绷', scores: { jiraiya:2, shikamaru:2, kakashi:1 } }
+    ]
+  },
+  {
+    q: '10. 面对晓组织的招揽——"加入我们，实现世界和平"，你的反应是？',
+    opts: [
+      { text: '拒绝——靠暴力和恐惧换来的和平不是真正的和平', scores: { naruto:3, jiraiya:2 } },
+      { text: '表面加入，暗中调查他们的真实目的', scores: { itachi:3, kakashi:2 } },
+      { text: '认真了解他们的主张后再做判断', scores: { shikamaru:3, kakashi:1 } },
+      { text: '如果他们的方案真的有效，也许值得考虑', scores: { sasuke:2, itachi:1 } }
+    ]
+  },
+  {
+    q: '11. 你理想中的最终归宿是怎样的？',
+    opts: [
+      { text: '成为火影，被全村人认可和爱戴', scores: { naruto:3, sakura:1 } },
+      { text: '在暗中守护村子，不求回报和名声', scores: { itachi:3, kakashi:1 } },
+      { text: '云游四方，自由自在地生活并留下传说', scores: { jiraiya:3, shikamaru:1 } },
+      { text: '建立一个让所有孩子都能平安长大的世界', scores: { gaara:3, naruto:2, itachi:2 } }
+    ]
+  },
+  {
+    q: '12. 用一句话总结你的人生信条——',
+    opts: [
+      { text: '"说到做到，这就是我的忍道！"', scores: { naruto:3, jiraiya:2 } },
+      { text: '"只有经历过黑暗，才能真正理解光明。"', scores: { gaara:3, itachi:2 } },
+      { text: '"我的能力不足，但我有足够的时间去努力。"', scores: { sakura:3, naruto:1 } },
+      { text: '"不管前方的路有多苦，只要走的方向正确，都比站在原地更接近幸福。"', scores: { itachi:2, kakashi:2, shikamaru:2 } }
+    ]
+  }
+];
+
+/* ================================================================
+   状态
+   ================================================================ */
+var currentQ = 0;
+var selected = null;
+var scores = {};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+
+/* ================================================================
+   开始测试
+   ================================================================ */
+function startQuiz() {
+  currentQ = 0;
+  selected = null;
+  scores = {};
+  for (var k in characters) scores[k] = 0;
+  showPage('quiz-page');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  var q = questions[currentQ];
+  document.getElementById('q-num').textContent = '第 '+(currentQ+1)+' / '+questions.length+' 题';
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('progress-fill').style.width = ((currentQ/questions.length)*100)+'%';
+
+  var optsDiv = document.getElementById('q-opts');
+  optsDiv.innerHTML = '';
+  selected = null;
+
+  q.opts.forEach(function(opt, i){
+    var div = document.createElement('div');
+    div.className = 'opt';
+    div.textContent = opt.text;
+    div.addEventListener('click', function(){
+      optsDiv.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('selected'); });
+      div.classList.add('selected');
+      selected = i;
+      document.getElementById('btn-next').classList.add('enabled');
+    });
+    optsDiv.appendChild(div);
+  });
+
+  var btnNext = document.getElementById('btn-next');
+  btnNext.classList.remove('enabled');
+  btnNext.textContent = currentQ < questions.length - 1 ? '下一题 ▸' : '查看结果 ▸';
+}
+
+function nextQuestion() {
+  if (selected === null) return;
+
+  var opt = questions[currentQ].opts[selected];
+  for (var c in opt.scores) {
+    if (scores[c] !== undefined) scores[c] += opt.scores[c];
+  }
+
+  if (currentQ < questions.length - 1) {
+    currentQ++;
+    selected = null;
+    renderQuestion();
+    document.getElementById('progress-fill').style.width = (((currentQ)/questions.length)*100)+'%';
+  } else {
+    document.getElementById('progress-fill').style.width = '100%';
+    showResult();
+  }
+}
+
+/* ================================================================
+   显示结果 — 纯 CSS 角色卡片 + 行楷名字
+   ================================================================ */
+function showResult() {
+  var sorted = Object.entries(scores)
+    .filter(function(e){ return characters[e[0]]; })
+    .sort(function(a,b){ return b[1]-a[1]; });
+
+  var topKey = sorted[0][0];
+  var char = characters[topKey];
+
+  // 角色卡片
+  var card = document.getElementById('char-card');
+  var bg = document.getElementById('card-bg');
+  // 清除旧 cssClass
+  bg.className = 'card-bg ' + char.cssClass;
+  document.getElementById('r-emoji').textContent = char.emoji;
+  card.style.display = 'block';
+
+  // 名字 — 行楷
+  document.getElementById('r-name').textContent = char.name;
+  document.getElementById('r-title').textContent = char.title;
+  document.getElementById('r-desc').textContent = char.desc;
+
+  // 匹配条
+  var matchesDiv = document.getElementById('r-matches');
+  matchesDiv.innerHTML = '';
+  sorted.slice(0, 4).forEach(function(e, idx){
+    var span = document.createElement('span');
+    span.className = 'match-tag' + (idx===0?' top':'');
+    var pct = Math.round(e[1] / sorted[0][1] * 100);
+    span.textContent = characters[e[0]].name + ' ' + pct + '%';
+    matchesDiv.appendChild(span);
+  });
+
+  showPage('result-page');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // 高燃BGM
+  if (!bgmPlaying && bgmReady) {
+    bgm.play().then(function(){
+      bgmPlaying = true;
+      bgmCtrl.classList.add('playing');
+      bgmCtrl.textContent = '♫';
+    }).catch(function(){});
+  }
+}
+
+/* ================================================================
+   重新测试
+   ================================================================ */
+function retry() {
+  currentQ = 0;
+  selected = null;
+  scores = {};
+  for (var k in characters) scores[k] = 0;
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('char-card').style.display = 'block';
+  showPage('cover');
+}
+</script>
+</body>
+</html>
