@@ -440,16 +440,10 @@ function toast(msg, ms) {
 var bgm = document.getElementById('bgm');
 var bgmCtrl = document.getElementById('bgm-ctrl');
 var bgmPlaying = false;
-var bgmReady = false;
 
-bgm.addEventListener('canplaythrough', function(){ bgmReady = true; });
-bgm.addEventListener('error', function(){ bgmReady = false; });
+bgm.addEventListener('error', function(){ toast('BGM 文件加载失败'); });
 
 bgmCtrl.addEventListener('click', function(){
-  if (!bgmReady) {
-    toast('未找到 bgm.mp3，请将高燃BGM文件重命名为 bgm.mp3 放入同目录');
-    return;
-  }
   if (bgmPlaying) {
     bgm.pause();
     bgmCtrl.classList.remove('playing');
@@ -460,9 +454,9 @@ bgmCtrl.addEventListener('click', function(){
       bgmPlaying = true;
       bgmCtrl.classList.add('playing');
       bgmCtrl.textContent = '♫';
-    }).catch(function(){
-      bgmReady = false;
-      toast('BGM 播放失败，请检查文件');
+    }).catch(function(e){
+      toast('点击任意位置后再点 ♪ 播放');
+      console.log('BGM play failed:', e);
     });
   }
 });
@@ -753,7 +747,7 @@ function showResult() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   // 高燃BGM
-  if (!bgmPlaying && bgmReady) {
+  if (!bgmPlaying) {
     bgm.play().then(function(){
       bgmPlaying = true;
       bgmCtrl.classList.add('playing');
